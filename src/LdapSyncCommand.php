@@ -1450,13 +1450,14 @@ class LdapSyncCommand extends \Symfony\Component\Console\Command\Command
             }
 
             $gitlabGroupPath = $slugifyGitlabPath->slugify($gitlabGroupName);
+            
+            if (!isset($ldapGroupsSafe[$gitlabGroupName]) || !is_array($ldapGroupsSafe[$gitlabGroupName])) {
+                $this->logger->warning(sprintf("Group \"%s\" doesn't appear to exist at path \"%s\". Assuming this is a subgroup, it will be ignored.", $gitlabGroupName, $gitlabGroupPath));
+                continue; // Subgroups will be ignored
+            }
 
             $membersOfThisGroup = [];
             foreach ($usersToSyncMembership as $gitlabUserId => $gitlabUserName) {
-                if (!isset($ldapGroupsSafe[$gitlabGroupName]) || !is_array($ldapGroupsSafe[$gitlabGroupName])) {
-                    $this->logger->warning(sprintf("Group \"%s\" doesn't appear to exist at path \"%s\". (Is this a sub-group? Sub-groups are not supported yet.)", $gitlabGroupName, $gitlabGroupPath));
-                    continue;
-                }
 
                 if (!$this->in_array_i($gitlabUserName, $ldapGroupsSafe[$gitlabGroupName])) {
                     continue;
